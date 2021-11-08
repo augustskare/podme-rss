@@ -29,44 +29,25 @@ function template(data: Overview) {
           margin: 0;
           list-style: none;
         }
-        thead tr {
-          text-align: left;
-        }
-        td, th {
-          padding-block: .25rem;
-        }
-        td {
-          border-bottom: 1px solid;
-        }
-        td:not(:first-of-type), th:last-of-type {
-          padding-inline: .5rem;
-        }
-        table {
-          border-collapse: collapse;
-          border-spacing: 0;
+        li {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-block-end: 1rem;
         }
       </style>
     </head>
     <body>
-    <table>
-      <thead>
-        <tr>
-          <th colspan="2">Podcast</th>
-          <th>ID</th>
-        </tr>
-      </thead>
-      <tbody>
+      <ul>  
         ${
     data.map((item) => (`
-          <tr>
-            <td><img width="60" height="60" src="${item.smallImageUrl}" alt="" /></td>
-            <td><a href="/feed/${item.id}">${item.title}</a></td>
-            <td>${item.id}</td>
-          </tr>
+          <li>
+            <img width="60" height="60" src="${item.smallImageUrl}" alt="" />
+            <a href="/feed/${item.slug}">${item.title}</a>
+          </li>
         `)).join("")
   }
-      </tbody>
-    </table>
+      </ul>
     </body>
   </html>`;
 }
