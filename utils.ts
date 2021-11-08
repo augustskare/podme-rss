@@ -1,18 +1,10 @@
-import type { AuthResponse } from "./podme.ts";
-
 async function request<ReqResponse>(
   path: string,
   options?: RequestInit,
-  auth?: AuthResponse,
 ): Promise<ReqResponse> {
   const url = new URL(path, "https://api.podme.com/");
-  const headers = new Headers();
-  headers.set("Content-Type", "application/json");
-  if (auth !== undefined) {
-    headers.set("Authorization", `${auth.token_type} ${auth.access_token}`);
-  }
 
-  const response = await fetch(url, { ...options, headers });
+  const response = await fetch(url, options);
   if (response.ok) {
     return response.json();
   }
@@ -34,19 +26,6 @@ function errorHandler(status?: number) {
       "www-authenticate": `Basic realm="podme-rss"`,
     },
   });
-}
-
-function authorization(request: Request) {
-  const authorization = request.headers.get("authorization");
-  if (authorization !== null) {
-    const basicauth = authorization.match(/^Basic\s+(.*)$/);
-    if (basicauth) {
-      const [email, password] = atob(basicauth[1]).split(":");
-      return { email, password };
-    }
-  }
-
-  throw new Response("", { status: 401 });
 }
 
 type RouteHandler = (
@@ -71,4 +50,4 @@ function router(request: Request, routes: Routes) {
   return errorHandler(404);
 }
 
-export { authorization, errorHandler, request, router };
+export { errorHandler, request, router };
