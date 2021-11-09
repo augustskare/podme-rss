@@ -1,4 +1,13 @@
 import * as setCookie from "https://cdn.skypack.dev/set-cookie-parser";
+import { errorHandler } from "./utils.ts";
+
+interface AuthResponse {
+  "access_token": string;
+  "refresh_token": string;
+  "id_token": string;
+  "expires_in": number;
+  "token_type": "Bearer";
+}
 
 export function requireBasicAuth(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -81,6 +90,25 @@ export async function requireAuth(username: string, password: string) {
       status: 200,
     },
   );
+}
+
+export async function requireSubscription(auth: Response) {
+  const { token_type: tokenType, access_token: accessToken } = await auth
+    .json() as AuthResponse;
+  const subscription = await fetch(
+    "https://api.podme.com/web/api/v2/subscription",
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `${tokenType} ${accessToken}`,
+      },
+    },
+  );
+  if (subscription.status === 200 && (await subscription.json()).length) {
+    return true;
+  }
+
+  throw errorHandler(401);
 }
 
 interface Cookie {

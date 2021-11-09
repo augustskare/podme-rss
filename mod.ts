@@ -9,7 +9,7 @@ console.log(`Listening on http://localhost:${PORT}`);
 
 const routes = new Map([
   [{ pathname: "/" }, index],
-  [{ pathname: "/feed/:slug" }, feed],
+  [{ pathname: "/feed/:id" }, feed],
 ]);
 
 await listenAndServe(`:${PORT}`, (request) => router(request, routes));
