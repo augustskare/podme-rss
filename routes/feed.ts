@@ -34,7 +34,6 @@ export async function feed(pattern: URLPatternResult, req: Request) {
       },
     });
   } catch (error) {
-    console.log(error);
     let status = 404;
     if (error instanceof Response) {
       status = error.status;
