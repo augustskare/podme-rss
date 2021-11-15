@@ -18,7 +18,7 @@ export async function feed(pattern: URLPatternResult, req: Request) {
     const headers = new Headers();
     headers.set("Content-Type", "application/json");
     headers.set("Authorization", `Bearer ${Deno.env.get("ACCESS_TOKEN")}`);
-
+    console.log(`Bearer ${Deno.env.get("ACCESS_TOKEN")}`)
     const [podcast, episodes] = await Promise.all([
       request<Podcast>(`mobile/api/v2/podcasts/${id}`, { headers }),
       request<Episode[]>(
