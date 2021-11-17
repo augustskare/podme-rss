@@ -18,7 +18,7 @@ export async function feed(pattern: URLPatternResult, req: Request) {
     const headers = new Headers();
     headers.set("Content-Type", "application/json");
     headers.set("Authorization", `Bearer ${Deno.env.get("ACCESS_TOKEN")}`);
-    console.log(`Bearer ${Deno.env.get("ACCESS_TOKEN")}`)
+
     const [podcast, episodes] = await Promise.all([
       request<Podcast>(`mobile/api/v2/podcasts/${id}`, { headers }),
       request<Episode[]>(
@@ -34,6 +34,9 @@ export async function feed(pattern: URLPatternResult, req: Request) {
       },
     });
   } catch (error) {
+    if (error.url.includes("mobile")) {
+      console.log(error.headers.get("www-authenticate"));
+    }
     let status = 404;
     if (error instanceof Response) {
       status = error.status;
