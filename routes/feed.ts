@@ -34,9 +34,6 @@ export async function feed(pattern: URLPatternResult, req: Request) {
       },
     });
   } catch (error) {
-    if (error.url.includes("mobile")) {
-      console.log(error.headers.get("www-authenticate"));
-    }
     let status = 404;
     if (error instanceof Response) {
       status = error.status;
