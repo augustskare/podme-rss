@@ -60,7 +60,7 @@ export interface Episode {
   onlyAsPackageSubscription: boolean;
 }
 
-export type Overview = {
+export type PodcastOverview = {
   id: number;
   isPremium: boolean;
   largeImageUrl: string;
