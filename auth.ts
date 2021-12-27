@@ -18,6 +18,7 @@ export function requireBasicAuth(request: Request) {
       return { email, password };
     }
   }
+  console.log("test");
 
   throw new Response("", { status: 401 });
 }
