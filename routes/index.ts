@@ -43,7 +43,7 @@ function template(data: Overview) {
     data.map((item) => (`
           <li>
             <img width="60" height="60" src="${item.smallImageUrl}" alt="" />
-            <a href="/feed/${item.id}">${item.title}</a>
+            <a href="/${item.slug}">${item.title}</a>
           </li>
         `)).join("")
   }
