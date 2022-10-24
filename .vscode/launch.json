@@ -1,13 +1,11 @@
 {
-    "configurations": [
-        {
-            "name": "Attach to debugger",
-            "port": 9229,
-            "request": "attach",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "pwa-node"
-        },
-    ]
+  "configurations": [
+    {
+      "name": "Attach to debugger",
+      "port": 9229,
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    }
+  ]
 }

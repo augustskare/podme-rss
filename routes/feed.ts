@@ -4,39 +4,23 @@ import {
   tag,
 } from "https://raw.githubusercontent.com/olaven/serialize-xml/v0.4.0/mod.ts";
 
-import type { Episode, Podcast } from "../podme.ts";
-import { requireAuth, requireBasicAuth } from "../auth.ts";
-import { errorHandler, request } from "../utils.ts";
+import type { RouteArgs } from "../utils/router.ts";
+import type { Episode, Podcast } from "../utils/podme.ts";
+import { getPodcast } from "../utils/podme.ts";
+import { authenticate, requireBasicAuth } from "../utils/auth.ts";
 
-export async function feed(pattern: URLPatternResult, req: Request) {
+export async function feed({ pattern, request }: RouteArgs) {
   const { slug } = pattern.pathname.groups;
-  try {
-    const { email, password } = requireBasicAuth(req);
-    const authResponse = await requireAuth(email, password);
-    const {access_token} = await authResponse.json();
+  const { username, password } = requireBasicAuth(request);
+  const { access_token } = await authenticate(username, password);
+  const { podcast, episodes } = await getPodcast(slug, access_token);
 
-    const headers = new Headers();
-    headers.set("Content-Type", "application/json");
-    headers.set("Authorization", `Bearer ${access_token}`);
-
-    const [podcast, episodes] = await Promise.all([
-      request<Podcast>(`/web/api/v2/podcast/slug/${slug}`, { headers }),
-      request<Episode[]>(`/web/api/v2/episode/slug/${slug}`, { headers }),
-    ]);
-
-    return new Response(template(podcast, episodes), {
-      status: 200,
-      headers: {
-        "content-type": "application/rss+xml",
-      },
-    });
-  } catch (error) {
-    let status = 404;
-    if (error instanceof Response) {
-      status = error.status;
-    }
-    return errorHandler(status);
-  }
+  return new Response(template(podcast, episodes), {
+    status: 200,
+    headers: {
+      "content-type": "application/rss+xml",
+    },
+  });
 }
 
 function template(podcast: Podcast, episodes: Episode[]) {
@@ -69,12 +53,18 @@ function template(podcast: Podcast, episodes: Episode[]) {
               tag("pubDate", new Date(episode.dateAdded).toUTCString()),
               tag("title", episode.title),
               tag("itunes:title", episode.title),
-              tag("itunes:author", episode.authorFullName || podcast.authorFullName),
+              tag(
+                "itunes:author",
+                episode.authorFullName || podcast.authorFullName,
+              ),
               tag("itunes:duration", episode.length),
               tag("link", link),
               tag("description", episode.description),
               tag("enclosure", "", [
-                ["url", episode.streamUrl.replace('master.m3u8', 'audio_128_pkg.mp4')],
+                [
+                  "url",
+                  episode.streamUrl.replace("master.m3u8", "audio_128_pkg.mp4"),
+                ],
                 ["type", "audio/x-m4a"],
               ]),
             ]);

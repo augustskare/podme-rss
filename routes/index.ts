@@ -1,11 +1,8 @@
-import type { Overview } from "../podme.ts";
-import { request } from "../utils.ts";
+import type { Overview } from "../utils/podme.ts";
+import { getOverview } from "../utils/podme.ts";
 
 export async function index() {
-  const data = await request<Overview>(
-    "https://api.podme.com/web/api/v2/podcast/popular?podcastType=1&category=&page=0&pageSize=250",
-  );
-  return new Response(template(data), {
+  return new Response(template(await getOverview()), {
     status: 200,
     headers: {
       "content-type": "text/html",
@@ -42,7 +39,7 @@ function template(data: Overview) {
         ${
     data.map((item) => (`
           <li>
-            <img width="60" height="60" src="${item.smallImageUrl}" alt="" />
+            <img width="60" height="60" src="${item.smallImageUrl}" alt="" loading="lazy" />
             <a href="/${item.slug}">${item.title}</a>
           </li>
         `)).join("")
