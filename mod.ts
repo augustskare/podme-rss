@@ -1,6 +1,6 @@
 import { router } from "./utils/router.ts";
-import { index } from "./routes/index.ts";
-import { feed } from "./routes/feed.ts";
+import { index } from "./routes/index.tsx";
+import { feed } from "./routes/feed.tsx";
 
 router([
   [{ pathname: "/" }, index],
