@@ -62,7 +62,7 @@ export interface Episode {
   authorFullName: string | null;
   title: string;
   podcastTitle: string | null;
-  length: string; 
+  length: string;
   description: string;
   imageUrl?: string;
   smallImageUrl: string;
