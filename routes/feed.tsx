@@ -1,29 +1,23 @@
-import { renderToString } from "https://esm.sh/preact-render-to-string@5.2.6?target=deno";
-
-import type { RouteArgs } from "../utils/router.ts";
 import type { Episode, Podcast } from "../utils/podme.ts";
 import { getPodcast } from "../utils/podme.ts";
 import { authenticate, requireBasicAuth } from "../utils/auth.ts";
 import { Itunes, Rss } from "../components/rss.tsx";
+import { LoaderArgs, PageProps } from "../utils/router.tsx";
 
-export async function feed({ pattern, request }: RouteArgs) {
-  const { slug } = pattern.pathname.groups;
+export async function loader({ request, params }: LoaderArgs) {
   const { username, password } = requireBasicAuth(request);
   const { access_token } = await authenticate(username, password);
-  const { podcast, episodes } = await getPodcast(slug, access_token);
-
-  const html = renderToString(<Feed podcast={podcast} episodes={episodes} />);
-  return new Response('<?xml version="1.0" encoding="UTF-8"?>' + html, {
-    status: 200,
-    headers: {
-      "content-type": "application/rss+xml",
-    },
-  });
+  return getPodcast(params.slug, access_token);
 }
 
-function Feed(
-  { podcast, episodes }: { podcast: Podcast; episodes: Episode[] },
+export const headers = {
+  "content-type": "application/rss+xml",
+};
+
+export default function Feed(
+  props: PageProps<{ podcast: Podcast; episodes: Episode[] }>,
 ) {
+  const { podcast, episodes } = props.data;
   return (
     <Rss.Root>
       <Rss.Channel>

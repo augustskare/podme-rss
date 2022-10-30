@@ -21,10 +21,12 @@ export async function getPodcast(slug: string, access_token: string) {
     $fetch<Episode[]>(`/web/api/v2/episode/slug/${slug}`, { headers }),
   ]);
 
-  return {
-    podcast,
-    episodes,
-  };
+  return new Response(JSON.stringify({ podcast, episodes }), {
+    status: 200,
+    headers: {
+      "content-type": "application/json",
+    },
+  });
 }
 
 export function getSubscription(access_token: string) {
@@ -35,11 +37,6 @@ export function getSubscription(access_token: string) {
   return $fetch("/web/api/v2/subscription", { headers });
 }
 
-export function getOverview() {
-  return $fetch<Overview>(
-    "/web/api/v2/podcast/popular?podcastType=1&category=&page=0&pageSize=250",
-  );
-}
 export interface Podcast {
   id: number;
   title: string;
@@ -75,13 +72,3 @@ export interface Episode {
   episodeCanBePlayed: boolean;
   onlyAsPackageSubscription: boolean;
 }
-
-export type Overview = {
-  id: number;
-  isPremium: boolean;
-  largeImageUrl: string;
-  mediumImageUrl: string;
-  slug: string;
-  smallImageUrl: string;
-  title: string;
-}[];

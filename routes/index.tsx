@@ -1,20 +1,13 @@
-import { renderToString } from "https://esm.sh/preact-render-to-string@5.2.6?target=deno";
+import type { Podcast } from "../utils/podme.ts";
+import { PageProps } from "../utils/router.tsx";
 
-import type { Overview } from "../utils/podme.ts";
-import { getOverview } from "../utils/podme.ts";
-
-export async function index() {
-  const html = renderToString(<Index podcasts={await getOverview()} />);
-
-  return new Response(`<!DOCTYPE html>${html}`, {
-    status: 200,
-    headers: {
-      "content-type": "text/html",
-    },
-  });
+export function loader() {
+  return fetch(
+    "https://api.podme.com/web/api/v2/podcast/popular?podcastType=1&category=&page=0&pageSize=50",
+  );
 }
 
-function Index(props: { podcasts: Overview }) {
+export default function Index(props: PageProps<Podcast[]>) {
   return (
     <html lang="en">
       <head>
@@ -43,7 +36,7 @@ function Index(props: { podcasts: Overview }) {
       </head>
       <body>
         <ul>
-          {props.podcasts.map((podcast) => {
+          {props.data.map((podcast) => {
             return (
               <li key={podcast.slug}>
                 <img
