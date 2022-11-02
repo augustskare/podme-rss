@@ -8,6 +8,18 @@ export function loader() {
 }
 
 export default function Index(props: PageProps<Podcast[]>) {
+  const email = props.url.searchParams.get("email");
+  const password = props.url.searchParams.get("password");
+  const podcast = props.url.searchParams.get("podcast");
+
+  let feedUrl: string | undefined;
+  if (email && password && podcast) {
+    const url = new URL(podcast, props.url.origin);
+    url.password = password;
+    url.username = email;
+    feedUrl = url.toString();
+  }
+
   return (
     <html lang="en">
       <head>
@@ -17,40 +29,71 @@ export default function Index(props: PageProps<Podcast[]>) {
         <title>podme-rss</title>
         <style>
           {`
-        body {
-          font-family: system-ui, sans-serif;
-        }
-        ul {
-          padding: 0;
-          margin: 0;
-          list-style: none;
-        }
-        li {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          margin-block-end: 1rem;
-        }
+            body {
+              font-family: system-ui, sans-serif;
+              accent-color: red;
+            }
+            label {
+              display: block;
+              margin-block-end: .25rem;
+            }
+
+            input {
+              font-size: 1em;
+              border: 1px solid gray;
+              border-radius: .25rem;
+              padding: .25rem;
+            }
+
+            output {
+              background-color: khaki;
+              padding: .5rem .75rem;
+              border-radius: .25rem;
+            }
+            button {
+              font-size: 1em;
+            }
         `}
         </style>
       </head>
       <body>
-        <ul>
-          {props.data.map((podcast) => {
-            return (
-              <li key={podcast.slug}>
-                <img
-                  width="60"
-                  height="60"
-                  src={podcast.smallImageUrl}
-                  alt=""
-                  loading="lazy"
-                />
-                <a href={podcast.slug}>{podcast.title}</a>
-              </li>
-            );
-          })}
-        </ul>
+        <h1>Generer podcast url</h1>
+
+        {feedUrl
+          ? (
+            <output form="form" for="email password podcast">
+              <a href={feedUrl}>{feedUrl}</a>
+            </output>
+          )
+          : null}
+        <form id="form">
+          <p>
+            <label htmlFor="email">E-post</label>
+            <input type="email" name="email" id="email" />
+          </p>
+          <p>
+            <label htmlFor="password">Passord</label>
+            <input type="password" name="password" id="password" />
+          </p>
+          <p>
+            <label htmlFor="podcast">Podcast</label>
+            <input
+              type="podcast"
+              name="podcast"
+              id="podcast"
+              list="podcast-list"
+            />
+            <datalist id="podcast-list">
+              {props.data.map((podcast) => (
+                <option key={podcast.slug} value={podcast.slug}>
+                  {podcast.title}
+                </option>
+              ))}
+            </datalist>
+          </p>
+
+          <button>Generer url</button>
+        </form>
       </body>
     </html>
   );

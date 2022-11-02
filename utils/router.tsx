@@ -11,6 +11,7 @@ export type LoaderArgs = { request: Request; params: Record<string, string> };
 // deno-lint-ignore no-explicit-any
 export interface PageProps<T = any> {
   data: T;
+  url: URL;
 }
 
 export async function router(routes: Routes) {
@@ -31,12 +32,14 @@ async function handler(request: Request, routes: Routes): Promise<Response> {
         const params = result.pathname.groups;
         const loader = await fn?.loader?.({ request, params });
         let data = undefined;
-        if (loader && loader instanceof Response) {
+        if (loader) {
           data = await loader.json();
         }
 
         const View = fn.default;
-        const document = renderToString(<View data={data} />);
+        const document = renderToString(
+          <View data={data} url={new URL(request.url)} />,
+        );
         const headers = new Headers(
           fn.headers || { "content-type": "text/html" },
         );
