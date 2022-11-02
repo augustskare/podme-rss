@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns"
+    ],
+    "jsxFactory": "h",
+    "jsx": "react-jsx",
+    "jsxImportSource": "https://esm.sh/preact@10.11.2"
+  }
+}
