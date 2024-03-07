@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.159.0/http/server.ts";
 import { renderToString } from "https://esm.sh/preact-render-to-string@5.2.6?target=deno";
 
 type Routes = [URLPatternInput, RouteModule][];
@@ -14,8 +13,9 @@ export interface PageProps<T = any> {
   url: URL;
 }
 
-export async function router(routes: Routes) {
-  await serve((request) => handler(request, routes));
+
+export function router(routes: Routes) {
+  Deno.serve((request) => handler(request, routes));
 }
 
 async function handler(request: Request, routes: Routes): Promise<Response> {
