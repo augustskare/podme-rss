@@ -1,4 +1,4 @@
-import { ComponentChildren, h } from "https://esm.sh/preact@10.11.2";
+import { ComponentChildren, h } from "preact";
 
 type Props = { children?: ComponentChildren | ComponentChildren[] } & {
   [key: string]: unknown;

@@ -1,4 +1,4 @@
-import forge from "https://esm.sh/node-forge@0.7.0";
+import forge from "forge";
 
 export function requireBasicAuth(request: Request) {
   const authorization = request.headers.get("authorization");

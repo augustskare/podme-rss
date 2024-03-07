@@ -7,6 +7,9 @@ import { LoaderArgs, PageProps } from "../utils/router.tsx";
 export async function loader({ request, params }: LoaderArgs) {
   const { email, password } = requireBasicAuth(request);
   const { access_token } = await authenticate(email, password);
+  if (params.slug === undefined) {
+    return new Response("Not found", { status: 404 });
+  }
   return getPodcast(params.slug, access_token);
 }
 
@@ -53,10 +56,7 @@ export default function Feed(
               <Itunes.Duration>{episode.length}</Itunes.Duration>
               <Rss.Link>{link}</Rss.Link>
               <Rss.Description>{episode.description}</Rss.Description>
-              <Rss.Enclosure
-                url={episode.url}
-                type="audio/mpeg"
-              />
+              <Rss.Enclosure url={episode.url} type="audio/mpeg" />
             </Rss.Item>
           );
         })}

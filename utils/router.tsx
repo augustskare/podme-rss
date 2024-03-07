@@ -1,4 +1,4 @@
-import { renderToString } from "https://esm.sh/preact-render-to-string@5.2.6?target=deno";
+import { renderToString } from "preact/render-to-string";
 
 type Routes = [URLPatternInput, RouteModule][];
 type RouteModule = {
@@ -6,13 +6,15 @@ type RouteModule = {
   loader?: (args: LoaderArgs) => Response | Promise<Response>;
   headers?: Record<string, string>;
 };
-export type LoaderArgs = { request: Request; params: Record<string, string> };
+export type LoaderArgs = {
+  request: Request;
+  params: URLPatternComponentResult["groups"];
+};
 // deno-lint-ignore no-explicit-any
 export interface PageProps<T = any> {
   data: T;
   url: URL;
 }
-
 
 export function router(routes: Routes) {
   Deno.serve((request) => handler(request, routes));
