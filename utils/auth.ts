@@ -5,8 +5,8 @@ export function requireBasicAuth(request: Request) {
   if (authorization !== null) {
     const basicauth = authorization.match(/^Basic\s+(.*)$/);
     if (basicauth) {
-      const [username, password] = atob(basicauth[1]).split(":");
-      return { username, password };
+      const [email, password] = atob(basicauth[1]).split(":");
+      return { email, password };
     }
   }
 
@@ -17,26 +17,31 @@ interface AuthenticateResponse {
   access_token: string;
   refresh_token: string;
   id_token: string;
-  expires_in: 86400,
-  token_type: "Bearer"
+  expires_in: 86400;
+  token_type: "Bearer";
 }
 
-export async function authenticate(email: string, rawPassword: string): Promise<AuthenticateResponse> {
+export async function authenticate(
+  email: string,
+  rawPassword: string,
+): Promise<AuthenticateResponse> {
   const key = forge.pki.publicKeyFromPem(Deno.env.get("PODME_PUBLIC_KEY"));
   const buffer = forge.util.createBuffer(rawPassword);
-  const password = forge.util.encode64(key.encrypt(buffer.getBytes(), "RSAES-PKCS1-V1_5"));
-  
-  const response = await fetch('https://api.podme.com/web/api/v2/user/login', {
-    method: 'POST',
+  const password = forge.util.encode64(
+    key.encrypt(buffer.getBytes(), "RSAES-PKCS1-V1_5"),
+  );
+
+  const response = await fetch("https://api.podme.com/web/api/v2/user/login", {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 
   if (response.ok) {
     return response.json();
   }
 
-  throw response.status === 400 ?  unauthorized() : response;
+  throw response.status === 400 ? unauthorized() : response;
 }
 
 function unauthorized() {

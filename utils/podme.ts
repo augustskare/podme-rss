@@ -16,10 +16,13 @@ export async function getPodcast(slug: string, access_token: string) {
   headers.set("Content-Type", "application/json");
   headers.set("Authorization", `Bearer ${access_token}`);
 
-  const [podcast, episodes] = await Promise.all([
-    $fetch<Podcast>(`/web/api/v2/podcast/slug/${slug}`, { headers }),
-    $fetch<Episode[]>(`/web/api/v2/episode/slug/${slug}`, { headers }),
-  ]);
+  const podcast = await $fetch<Podcast>(`/web/api/v2/podcast/slug/${slug}`, {
+    headers,
+  });
+  const episodes = await $fetch<Episode[]>(
+    `/mobile/api/v2/episodes/podcast/${podcast.id}`,
+    { headers },
+  );
 
   return new Response(JSON.stringify({ podcast, episodes }), {
     status: 200,
@@ -56,19 +59,36 @@ export interface Podcast {
 export interface Episode {
   id: number;
   podcastId: number;
-  authorFullName: string | null;
+  authorFullName: string;
   title: string;
-  podcastTitle: string | null;
+  number: number;
+  subtitle: string;
+  podcastTitle: string;
+  slug: string;
   length: string;
+  byteLength: number;
+  url: string;
+  type: string;
+  dateAdded: string;
   description: string;
-  imageUrl?: string;
+  imageUrl: string;
   smallImageUrl: string;
   mediumImageUrl: string;
-  streamUrl: string;
-  slug: string | null;
+  largeImageUrl: string;
+  smoothStreamingUrl: string;
+  mpegDashUrl: string;
+  hlsV3Url: string;
+  publishDate: string;
+  hasPlayed: boolean;
+  hasCompleted: boolean;
   currentSpot: string;
-  dateAdded: string;
-  isPremium: boolean;
+  episodeCreatedAt: string;
+  episodeUpdatedAt: string;
+  playInfoUpdatedAt: string;
   episodeCanBePlayed: boolean;
+  isPremium: boolean;
+  podcastImageUrl: string;
   onlyAsPackageSubscription: boolean;
+  totalNoOfEpisodes: number;
+  isSaved: boolean;
 }

@@ -5,8 +5,8 @@ import { Itunes, Rss } from "../components/rss.tsx";
 import { LoaderArgs, PageProps } from "../utils/router.tsx";
 
 export async function loader({ request, params }: LoaderArgs) {
-  const { username, password } = requireBasicAuth(request);
-  const { access_token } = await authenticate(username, password);
+  const { email, password } = requireBasicAuth(request);
+  const { access_token } = await authenticate(email, password);
   return getPodcast(params.slug, access_token);
 }
 
@@ -18,6 +18,9 @@ export default function Feed(
   props: PageProps<{ podcast: Podcast; episodes: Episode[] }>,
 ) {
   const { podcast, episodes } = props.data;
+  const image = podcast.imageUrl || podcast.mediumImageUrl ||
+    podcast.smallImageUrl;
+
   return (
     <Rss.Root>
       <Rss.Channel>
@@ -28,7 +31,7 @@ export default function Feed(
         <Itunes.Date>
           {new Date(episodes[0].dateAdded).toUTCString()}
         </Itunes.Date>
-        <Itunes.Image href={podcast.imageUrl || podcast.mediumImageUrl} />
+        <Itunes.Image href={image} />
         <Itunes.Owner>
           <Itunes.Name>{podcast.authorFullName}</Itunes.Name>
           <Itunes.Email>podcast@podme.com</Itunes.Email>
@@ -51,11 +54,8 @@ export default function Feed(
               <Rss.Link>{link}</Rss.Link>
               <Rss.Description>{episode.description}</Rss.Description>
               <Rss.Enclosure
-                url={episode.streamUrl.replace(
-                  "master.m3u8",
-                  "audio_128_pkg.mp4",
-                )}
-                type="audio/x-m4a"
+                url={episode.url}
+                type="audio/mpeg"
               />
             </Rss.Item>
           );
