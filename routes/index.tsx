@@ -6,14 +6,32 @@ enum Region {
   FI = "3",
 }
 
+const cache = await caches.open("podme-rss");
+
 export async function loader() {
   const url = new URL("https://api.podme.com/web/api/v2/podcast/category/222");
   url.searchParams.set("page", "0");
   url.searchParams.set("pageSize", "150");
   url.searchParams.set("region", Region.NO);
 
+  const cacheKey = url.toString();
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const response = await fetch(url);
   if (response.ok) {
+    await cache.put(
+      cacheKey,
+      new Response(response.clone().body, {
+        status: 200,
+        headers: {
+          "Cache-Control": "max-age=3600",
+          "Content-Type": "application/json",
+        },
+      }),
+    );
     return response;
   }
   throw response;
