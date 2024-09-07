@@ -1,13 +1,30 @@
-import type { Podcast } from "../utils/podme.ts";
 import { PageProps } from "../utils/router.tsx";
 
-export function loader() {
-  return fetch(
-    "https://api.podme.com/web/api/v2/podcast/popular?podcastType=1&category=&page=0&pageSize=50",
-  );
+enum Region {
+  SE = "1",
+  NO = "2",
+  FI = "3",
 }
 
-export default function Index(props: PageProps<Podcast[]>) {
+export async function loader() {
+  const url = new URL("https://api.podme.com/web/api/v2/podcast/category/222");
+  url.searchParams.set("page", "0");
+  url.searchParams.set("pageSize", "150");
+  url.searchParams.set("region", Region.NO);
+
+  const response = await fetch(url);
+  if (response.ok) {
+    return response;
+  }
+  throw response;
+}
+
+export default function Index(
+  props: PageProps<{
+    total: number;
+    podcasts: { slug: string; title: string; id: string }[];
+  }>,
+) {
   const email = props.url.searchParams.get("email");
   const password = props.url.searchParams.get("password");
   const podcast = props.url.searchParams.get("podcast");
@@ -84,7 +101,7 @@ export default function Index(props: PageProps<Podcast[]>) {
               list="podcast-list"
             />
             <datalist id="podcast-list">
-              {props.data.map((podcast) => (
+              {props.data.podcasts.map((podcast) => (
                 <option key={podcast.slug} value={podcast.slug}>
                   {podcast.title}
                 </option>
