@@ -9,6 +9,7 @@ type RouteModule = {
 export type LoaderArgs = {
   request: Request;
   params: URLPatternComponentResult["groups"];
+  context: { db: Deno.Kv };
 };
 // deno-lint-ignore no-explicit-any
 export interface PageProps<T = any> {
@@ -16,11 +17,17 @@ export interface PageProps<T = any> {
   url: URL;
 }
 
-export function router(routes: Routes) {
-  Deno.serve((request) => handler(request, routes));
+export async function router(routes: Routes) {
+  const db = await Deno.openKv();
+  const server = Deno.serve((request) => handler(request, routes, db));
+  server.finished.then(() => db.close());
 }
 
-async function handler(request: Request, routes: Routes): Promise<Response> {
+async function handler(
+  request: Request,
+  routes: Routes,
+  db: Deno.Kv,
+): Promise<Response> {
   const routingMap: Map<URLPattern, RouteModule> = new Map();
   routes.forEach(([pattern, fn]) => {
     const compiledPattern = new URLPattern(pattern);
@@ -32,7 +39,7 @@ async function handler(request: Request, routes: Routes): Promise<Response> {
       const result = compiledPattern.exec(request.url);
       if (result) {
         const params = result.pathname.groups;
-        const loader = await fn?.loader?.({ request, params });
+        const loader = await fn?.loader?.({ request, params, context: { db } });
         let data = undefined;
         if (loader) {
           data = await loader.json();
