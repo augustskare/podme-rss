@@ -1,18 +1,27 @@
-import { PageProps } from "../utils/router.tsx";
+import { LoaderArgs, PageProps } from "../utils/router.tsx";
 
-enum Region {
-  SE = "1",
-  NO = "2",
-  FI = "3",
-}
+const Region = {
+  "SE": "1",
+  "NO": "2",
+  "FI": "3",
+};
 
 const cache = await caches.open("podme-rss");
 
-export async function loader() {
+function getCurrentRegion(url: URL) {
+  const requestedRegion = url.searchParams.get("region") || "";
+  return (Object.keys(Region).includes(requestedRegion)
+    ? requestedRegion
+    : "NO") as keyof typeof Region;
+}
+
+export async function loader({ request }: LoaderArgs) {
+  const region = getCurrentRegion(new URL(request.url));
+
   const url = new URL("https://api.podme.com/web/api/v2/podcast/category/222");
   url.searchParams.set("page", "0");
   url.searchParams.set("pageSize", "150");
-  url.searchParams.set("region", Region.NO);
+  url.searchParams.set("region", Region[region]);
 
   const cacheKey = url.toString();
   const cached = await cache.match(cacheKey);
@@ -43,6 +52,7 @@ export default function Index(
     podcasts: { slug: string; title: string; id: string }[];
   }>,
 ) {
+  const region = getCurrentRegion(props.url);
   const email = props.url.searchParams.get("email");
   const password = props.url.searchParams.get("password");
   const podcast = props.url.searchParams.get("podcast");
@@ -92,7 +102,37 @@ export default function Index(
         </style>
       </head>
       <body>
-        <h1>Generer podcast url</h1>
+        <h1>Generate podcast url</h1>
+
+        <nav>
+          <h2>Selected region</h2>
+          <ul>
+            <li>
+              <a
+                href="?region=NO"
+                aria-current={region === "NO" ? "page" : undefined}
+              >
+                Norway
+              </a>
+            </li>
+            <li>
+              <a
+                href="?region=SE"
+                aria-current={region === "SE" ? "page" : undefined}
+              >
+                Sweden
+              </a>
+            </li>
+            <li>
+              <a
+                href="?region=FI"
+                aria-current={region === "FI" ? "page" : undefined}
+              >
+                Finland
+              </a>
+            </li>
+          </ul>
+        </nav>
 
         {feedUrl
           ? (
@@ -121,7 +161,7 @@ export default function Index(
             </select>
           </p>
 
-          <button>Generer url</button>
+          <button>Generate url</button>
         </form>
       </body>
     </html>
