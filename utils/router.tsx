@@ -3,7 +3,9 @@ import { renderToString } from "preact/render-to-string";
 type Routes = [URLPatternInput, RouteModule][];
 type RouteModule = {
   default: (props: PageProps) => preact.JSX.Element;
-  loader?: (args: LoaderArgs) => Response | Promise<Response>;
+  loader?: (
+    args: LoaderArgs,
+  ) => Response | Promise<Response> | object | Promise<object>;
   headers?: Record<string, string>;
 };
 export type LoaderArgs = {
@@ -40,8 +42,8 @@ async function handler(
       if (result) {
         const params = result.pathname.groups;
         const loader = await fn?.loader?.({ request, params, context: { db } });
-        let data = undefined;
-        if (loader) {
+        let data = loader;
+        if (loader instanceof Response) {
           data = await loader.json();
         }
 
