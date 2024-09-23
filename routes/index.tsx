@@ -77,6 +77,11 @@ export default function Index(
             body {
               font-family: system-ui, sans-serif;
             }
+
+            a[aria-current=page] {
+            font-weight: bold;
+            }
+
             label {
               display: block;
               margin-block-end: .25rem;
