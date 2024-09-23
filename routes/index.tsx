@@ -66,19 +66,19 @@ export default function Index(
           {`
             body {
               font-family: system-ui, sans-serif;
-              accent-color: red;
             }
             label {
               display: block;
               margin-block-end: .25rem;
             }
 
-            input {
+            input, select {
               font-size: 1em;
               border: 1px solid gray;
               border-radius: .25rem;
               padding: .25rem;
             }
+
 
             output {
               background-color: khaki;
@@ -112,19 +112,13 @@ export default function Index(
           </p>
           <p>
             <label htmlFor="podcast">Podcast</label>
-            <input
-              type="podcast"
-              name="podcast"
-              id="podcast"
-              list="podcast-list"
-            />
-            <datalist id="podcast-list">
+            <select name="podcast" id="podcast">
               {props.data.podcasts.map((podcast) => (
                 <option key={podcast.slug} value={podcast.slug}>
                   {podcast.title}
                 </option>
               ))}
-            </datalist>
+            </select>
           </p>
 
           <button>Generer url</button>
