@@ -4,12 +4,53 @@ import { authenticate, requireBasicAuth } from "../utils/auth.ts";
 import { Itunes, Rss } from "../components/rss.tsx";
 import { LoaderArgs, PageProps } from "../utils/router.tsx";
 
-export async function loader({ request, params }: LoaderArgs) {
-  const { email, password } = requireBasicAuth(request);
-  const { access_token } = await authenticate(email, password);
+async function hmacHash(value: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const hashBuffer = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(value),
+  );
+  return Array.from(new Uint8Array(hashBuffer)).map((b) =>
+    b.toString(16).padStart(2, "0")
+  ).join("");
+}
+
+async function collectTelemetry(db: Deno.Kv, email: string, podcast: string) {
+  const envPermission = await Deno.permissions.query({
+    name: "env",
+    variable: "TELEMETRY_SECRET",
+  });
+  const secret = envPermission.state === "granted" &&
+    Deno.env.get("TELEMETRY_SECRET");
+  if (typeof secret !== "string") {
+    console.log("Telemetry data not collected, secret missing");
+    return;
+  }
+  const key = ["user", await hmacHash(email, secret)];
+  const value = await db.get(key);
+  const podcasts = (value?.value as Set<string>) ?? new Set<string>();
+  podcasts.add(podcast);
+  await db.set(key, podcasts);
+}
+
+export async function loader({ request, params, context: { db } }: LoaderArgs) {
   if (params.slug === undefined) {
     return new Response("Not found", { status: 404 });
   }
+  const { email, password } = requireBasicAuth(request);
+  const telemetry =
+    new URL(request.url).searchParams.get("telemetry") !== "false";
+  if (telemetry) {
+    collectTelemetry(db, email, params.slug);
+  }
+  const { access_token } = await authenticate(email, password);
   return getPodcast(params.slug, access_token);
 }
 

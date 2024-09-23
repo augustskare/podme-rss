@@ -10,7 +10,8 @@
       "dom",
       "dom.iterable",
       "dom.asynciterable",
-      "deno.ns"
+      "deno.ns",
+      "deno.unstable"
     ],
     "jsxFactory": "h",
     "jsx": "react-jsx",

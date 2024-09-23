@@ -3,12 +3,15 @@ import { renderToString } from "preact/render-to-string";
 type Routes = [URLPatternInput, RouteModule][];
 type RouteModule = {
   default: (props: PageProps) => preact.JSX.Element;
-  loader?: (args: LoaderArgs) => Response | Promise<Response>;
+  loader?: (
+    args: LoaderArgs,
+  ) => Response | Promise<Response> | object | Promise<object>;
   headers?: Record<string, string>;
 };
 export type LoaderArgs = {
   request: Request;
   params: URLPatternComponentResult["groups"];
+  context: { db: Deno.Kv };
 };
 // deno-lint-ignore no-explicit-any
 export interface PageProps<T = any> {
@@ -16,11 +19,17 @@ export interface PageProps<T = any> {
   url: URL;
 }
 
-export function router(routes: Routes) {
-  Deno.serve((request) => handler(request, routes));
+export async function router(routes: Routes) {
+  const db = await Deno.openKv();
+  const server = Deno.serve((request) => handler(request, routes, db));
+  server.finished.then(() => db.close());
 }
 
-async function handler(request: Request, routes: Routes): Promise<Response> {
+async function handler(
+  request: Request,
+  routes: Routes,
+  db: Deno.Kv,
+): Promise<Response> {
   const routingMap: Map<URLPattern, RouteModule> = new Map();
   routes.forEach(([pattern, fn]) => {
     const compiledPattern = new URLPattern(pattern);
@@ -32,9 +41,9 @@ async function handler(request: Request, routes: Routes): Promise<Response> {
       const result = compiledPattern.exec(request.url);
       if (result) {
         const params = result.pathname.groups;
-        const loader = await fn?.loader?.({ request, params });
-        let data = undefined;
-        if (loader) {
+        const loader = await fn?.loader?.({ request, params, context: { db } });
+        let data = loader;
+        if (loader instanceof Response) {
           data = await loader.json();
         }
 
